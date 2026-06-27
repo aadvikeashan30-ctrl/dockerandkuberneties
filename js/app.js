@@ -14,7 +14,7 @@
   const menuToggle = document.getElementById("menuToggle");
   const tip = document.getElementById("floatingTip");
 
-  const VIEW_KEYS = ["home", "guide", "docker", "kubernetes", "yaml", "architecture", "playground", "builder", "interview"];
+  const VIEW_KEYS = ["home", "guide", "workshop", "docker", "kubernetes", "yaml", "architecture", "playground", "builder", "interview"];
   const visited = new Set(JSON.parse(localStorage.getItem("co_visited") || "[]"));
 
   /* ---------------- Router ---------------- */
@@ -42,6 +42,7 @@
     wireCommon();
     if (view === "home") wireHome();
     if (view === "guide") wireGuide();
+    if (view === "workshop") wireWorkshop();
     if (view === "docker") wireDocker();
     if (view === "kubernetes") wireKubernetes();
     if (view === "yaml") wireYaml();
@@ -248,6 +249,48 @@
   /* ---------------- GUIDE (Start Here) ---------------- */
   function wireGuide() {
     // players + reveal handled by wireCommon; nothing extra needed yet
+  }
+
+  /* ---------------- WORKSHOP ---------------- */
+  function wireWorkshop() {
+    const W = D.workshop;
+    const panel = document.getElementById("wsDayPanel");
+    const explain = document.getElementById("wsExplain");
+    countUp();
+
+    function showTopic(name) {
+      const t = W.topics[name];
+      if (!t) { explain.innerHTML = `<span class="ex-key">${name}</span><div class="ex-body">A hands-on session topic in the workshop.</div>`; return; }
+      const linkHtml = t.link ? `<a class="link-inline" href="#${t.link}">Open the ${t.link} module →</a>` : "";
+      explain.innerHTML = `<span class="ex-key">${name}</span>
+        <div class="dc-simple" style="margin:10px 0 0"><span class="dc-badge">In simple words</span>${t.simple}</div>
+        <div class="analogy-box" style="margin:12px 0"><span class="analogy-emoji float-y">💭</span>
+          <div><div class="analogy-title">It's like…</div><div class="analogy-text">${t.analogy}</div></div></div>
+        <div class="ex-body">${t.detail} ${linkHtml}</div>`;
+      explain.classList.add("flash");
+      setTimeout(() => explain.classList.remove("flash"), 400);
+    }
+
+    function loadDay(i) {
+      panel.innerHTML = V.workshopDayPanel(i);
+      panel.querySelectorAll("[data-wstopic]").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          panel.querySelectorAll("[data-wstopic]").forEach((x) => x.classList.remove("sel"));
+          chip.classList.add("sel");
+          showTopic(chip.dataset.wstopic);
+        });
+      });
+    }
+
+    content.querySelectorAll("[data-wsday]").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        content.querySelectorAll("[data-wsday]").forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        loadDay(+tab.dataset.wsday);
+      });
+    });
+
+    loadDay(0);
   }
 
   /* ---------------- DOCKER ---------------- */

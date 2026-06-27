@@ -163,11 +163,85 @@ window.VIEWS = (function () {
   }
 
   /* =====================================================
+     WORKSHOP — Cambridge Institute 5-Day DevOps schedule
+     ===================================================== */
+  function workshop() {
+    const w = D.workshop;
+    const m = w.meta;
+    const totalTopics = Object.keys(w.topics).length;
+    return `<div class="view">
+      <div class="ws-banner reveal">
+        <div class="ws-crest float-y">${m.crest}</div>
+        <div class="ws-banner-text">
+          <div class="ws-institute">${esc(m.institute)}</div>
+          <div class="ws-loc">${esc(m.location)} · ${esc(m.dept)}</div>
+          <div class="ws-title gradient-text">${esc(m.title)}</div>
+        </div>
+        <div class="ws-badge-5d"><span class="b-num">5</span><span>DAYS</span></div>
+      </div>
+
+      <div class="stats reveal mt-2">
+        <div class="stat"><div class="s-num a" data-count="5">0</div><div class="s-lbl">Days</div></div>
+        <div class="stat"><div class="s-num b" data-count="3">0</div><div class="s-lbl">Sessions / day</div></div>
+        <div class="stat"><div class="s-num c" data-count="${totalTopics}">0</div><div class="s-lbl">Topics explained</div></div>
+        <div class="stat"><div class="s-num d" data-count="2">0</div><div class="s-lbl">Mock Interview days</div></div>
+      </div>
+
+      <p class="page-sub reveal" style="margin-top:18px">Here's the full agenda from the workshop. <strong>Click any topic chip</strong> to get a plain-words explanation, a real-life analogy and a deeper note — for every single item.</p>
+
+      <div class="ws-tabs reveal" id="wsTabs">
+        ${w.days.map((d, i) => `<button class="ws-tab ${i === 0 ? "active" : ""}" data-wsday="${i}">
+          <span class="ws-tab-ico">${d.ico}</span>
+          <span class="ws-tab-meta"><strong>Day ${d.n}</strong><small>${esc(d.date)}</small></span>
+        </button>`).join("")}
+      </div>
+
+      <div class="ws-grid">
+        <div id="wsDayPanel" class="reveal"><!-- day sessions injected --></div>
+        <div class="reveal" style="--d:.1s">
+          <div class="card explain-card ws-explain" id="wsExplain">
+            <span class="ex-key">👆 Click a topic</span>
+            <div class="ex-body explain-empty">Pick any topic chip on the left to learn what it means — in simple words first, then an analogy, then a bit deeper.</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Render one day's sessions (called by app.js on tab switch)
+  function workshopDayPanel(dayIndex) {
+    const d = window.DATA.workshop.days[dayIndex];
+    const breakChip = (ico, label, time) => `<div class="ws-break"><span>${ico}</span> ${label} <small>${esc(time)}</small></div>`;
+    const m = window.DATA.workshop.meta;
+    let html = `<div class="ws-day-head">
+      <div class="ws-day-ico float-y">${d.ico}</div>
+      <div><h3>Day ${d.n} — ${esc(d.theme)}</h3><div class="muted">${esc(d.date)}</div>
+      ${d.note ? `<div class="ws-note">ℹ️ ${esc(d.note)}</div>` : ""}</div>
+    </div>`;
+
+    d.sessions.forEach((s, si) => {
+      html += `<div class="ws-session reveal in" style="--d:${si * 0.08}s">
+        <div class="ws-session-head"><span class="ws-stag">${esc(s.label)}</span><span class="ws-time">🕒 ${esc(s.time)}</span></div>
+        <div class="ws-chips">
+          ${s.topics.map((t) => `<button class="ws-chip" data-wstopic="${esc(t)}">${esc(t)}</button>`).join("")}
+        </div>
+      </div>`;
+      // insert breaks between sessions (only on multi-session days)
+      if (!d.fullDay) {
+        if (si === 0) html += breakChip("☕", "Tea Break", m.times.tea);
+        if (si === 1) html += breakChip("🍽️", "Lunch Break", m.times.lunch);
+      }
+    });
+    return html;
+  }
+
+  /* =====================================================
      HOME / OVERVIEW
      ===================================================== */
   function home() {
     const cards = [
       { ico: "👋", title: "Start Here (Beginners)", body: "Never coded? Learn both tools through a simple food-truck story, step by step.", view: "guide" },
+      { ico: "🎓", title: "5-Day DevOps Workshop", body: "The full Cambridge Institute workshop agenda — every AWS, Docker, K8s & AI topic explained.", view: "workshop" },
       { ico: "🐳", title: "Docker Fundamentals", body: "Images, containers, Dockerfile, commands & ports — explained with everyday analogies.", view: "docker" },
       { ico: "☸️", title: "Kubernetes Architecture", body: "The control plane, worker nodes and Pods — told as a busy restaurant story.", view: "kubernetes" },
       { ico: "📄", title: "YAML Explorer", body: "Click any line of Pod, Deployment & Service YAML to see plain-English meaning.", view: "yaml" },
@@ -622,7 +696,7 @@ window.VIEWS = (function () {
   }
 
   return {
-    home, guide, docker, kubernetes, yaml, architecture, playground, builder, interview,
-    yamlCodePanel, yamlFlowPanel, stepShow, codeWalk,
+    home, guide, workshop, docker, kubernetes, yaml, architecture, playground, builder, interview,
+    yamlCodePanel, yamlFlowPanel, stepShow, codeWalk, workshopDayPanel,
   };
 })();
