@@ -14,7 +14,7 @@
   const menuToggle = document.getElementById("menuToggle");
   const tip = document.getElementById("floatingTip");
 
-  const VIEW_KEYS = ["home", "docker", "kubernetes", "yaml", "architecture", "playground", "builder", "interview"];
+  const VIEW_KEYS = ["home", "guide", "docker", "kubernetes", "yaml", "architecture", "playground", "builder", "interview"];
   const visited = new Set(JSON.parse(localStorage.getItem("co_visited") || "[]"));
 
   /* ---------------- Router ---------------- */
@@ -41,6 +41,7 @@
     // wire interactions for this view
     wireCommon();
     if (view === "home") wireHome();
+    if (view === "guide") wireGuide();
     if (view === "docker") wireDocker();
     if (view === "kubernetes") wireKubernetes();
     if (view === "yaml") wireYaml();
@@ -116,6 +117,62 @@
     });
     // scroll-reveal
     setupReveal();
+    // animated "how it works" players
+    content.querySelectorAll("[data-stepshow]").forEach(initStepShow);
+  }
+
+  /* ---------------- Animated stepShow player ---------------- */
+  function initStepShow(root) {
+    const stages = Array.from(root.querySelectorAll("[data-ss-stage]"));
+    const links = Array.from(root.querySelectorAll(".ss-link"));
+    const captionNum = root.querySelector("[data-ss-cnum]");
+    const captionText = root.querySelector("[data-ss-ctext]");
+    const bar = root.querySelector("[data-ss-bar]");
+    const playBtn = root.querySelector("[data-ss-play]");
+    const total = stages.length;
+    let idx = 0, timer = null, playing = false;
+
+    const specMap = {
+      "docker": D.dockerHowItWorks, "k8s": D.k8sHowItWorks,
+      "guide-docker": D.dockerHowItWorks, "guide-k8s": D.k8sHowItWorks,
+    };
+    const spec = specMap[root.getAttribute("data-stepshow")] || { stages: [] };
+
+    function paint() {
+      stages.forEach((s, i) => {
+        s.classList.toggle("done", i < idx);
+        s.classList.toggle("active", i === idx);
+      });
+      links.forEach((l, i) => l.classList.toggle("lit", i < idx));
+      const st = spec.stages[idx];
+      if (st) {
+        captionNum.textContent = idx + 1;
+        captionText.textContent = st.caption;
+      }
+      bar.style.width = (((idx + 1) / total) * 100) + "%";
+    }
+    function go(i) { idx = Math.max(0, Math.min(total - 1, i)); paint(); }
+    function next() {
+      if (idx >= total - 1) { stop(); return; }
+      go(idx + 1);
+    }
+    function play() {
+      if (playing) { stop(); return; }
+      if (idx >= total - 1) idx = 0;
+      playing = true; playBtn.innerHTML = "⏸ Pause"; paint();
+      timer = setInterval(() => {
+        if (idx >= total - 1) { stop(); return; }
+        go(idx + 1);
+      }, 2100);
+    }
+    function stop() { playing = false; clearInterval(timer); timer = null; playBtn.innerHTML = "▶ Play"; }
+    function reset() { stop(); go(0); }
+
+    playBtn.addEventListener("click", play);
+    root.querySelector("[data-ss-next]").addEventListener("click", () => { stop(); next(); });
+    root.querySelector("[data-ss-reset]").addEventListener("click", reset);
+    stages.forEach((s, i) => s.addEventListener("click", () => { stop(); go(i); }));
+    go(0);
   }
 
   /* ---------------- Scroll reveal ---------------- */
@@ -186,6 +243,11 @@
       el.style.transform = `translateY(-6px) rotateX(${-py * 6}deg) rotateY(${px * 6}deg)`;
     });
     el.addEventListener("mouseleave", () => { el.style.transform = ""; });
+  }
+
+  /* ---------------- GUIDE (Start Here) ---------------- */
+  function wireGuide() {
+    // players + reveal handled by wireCommon; nothing extra needed yet
   }
 
   /* ---------------- DOCKER ---------------- */

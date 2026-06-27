@@ -74,26 +74,120 @@ window.VIEWS = (function () {
     </div>`;
   }
 
+  // Animated "How it works" player: a stage strip with a moving glow,
+  // a big caption, and play/pause/step controls. Wired in app.js.
+  function stepShow(spec, kind) {
+    const stages = spec.stages.map((s, i) => `
+      <div class="ss-stage" data-ss-stage="${i}">
+        <div class="ss-ico">${s.ico}</div>
+        <div class="ss-title">${esc(s.title)}</div>
+      </div>
+      ${i < spec.stages.length - 1 ? `<div class="ss-link"><span class="ss-spark"></span></div>` : ""}
+    `).join("");
+    return `<div class="stepshow reveal" data-stepshow="${kind}">
+      <div class="ss-head">
+        <div>
+          <div class="ss-title-main">${esc(spec.title)}</div>
+          <div class="ss-sub">${esc(spec.subtitle)}</div>
+        </div>
+        <div class="ss-controls">
+          <button class="btn btn-primary ss-play" data-ss-play>▶ Play</button>
+          <button class="btn ss-step" data-ss-next>⏭ Step</button>
+          <button class="btn btn-ghost ss-reset" data-ss-reset>↺</button>
+        </div>
+      </div>
+      <div class="ss-track">${stages}</div>
+      <div class="ss-progress"><span class="ss-bar" data-ss-bar></span></div>
+      <div class="ss-caption" data-ss-caption>
+        <span class="ss-num" data-ss-cnum>1</span>
+        <span data-ss-ctext>${esc(spec.stages[0].caption)}</span>
+      </div>
+    </div>`;
+  }
+
+  /* =====================================================
+     START HERE — beginner guided story
+     ===================================================== */
+  function guide() {
+    return `<div class="view">
+      ${head("👋 Start Here · No experience needed", `Docker &amp; Kubernetes, <span class="gradient-text">explained like a story</span>`,
+        D.guideIntro)}
+
+      <div class="guide-hint reveal">
+        <span class="float-y" style="font-size:22px">🧭</span>
+        <div>Read these 8 tiny steps in order. By the end you'll understand what Docker and Kubernetes <em>actually do</em> — using just a food-truck story. Then explore the modules for the real diagrams.</div>
+      </div>
+
+      <div class="guide-steps">
+        ${D.guideSteps.map((s, i) => `<div class="guide-step reveal" style="--d:${i * 0.05}s">
+          <div class="gs-side">
+            <div class="gs-num">${s.n}</div>
+            <div class="gs-emoji float-y">${s.ico}</div>
+          </div>
+          <div class="gs-body">
+            <h3>${esc(s.title)}</h3>
+            <p class="gs-story">${esc(s.story)}</p>
+            <div class="gs-tech"><span class="gs-tech-badge">In tech terms</span> ${esc(s.tech)}</div>
+            <div class="gs-takeaway">💡 <strong>Remember:</strong> ${esc(s.takeaway)}</div>
+          </div>
+        </div>`).join("")}
+      </div>
+
+      ${sectionTitle("▶", "Now watch it happen", "— press Play")}
+      <p class="muted reveal">Same idea, now animated. Watch your app travel through Docker, then through Kubernetes.</p>
+      ${stepShow(D.dockerHowItWorks, "guide-docker")}
+      <div class="mt-3">${stepShow(D.k8sHowItWorks, "guide-k8s")}</div>
+
+      ${sectionTitle("📝", "Your first code — explained like you're 5")}
+      <p class="muted reveal">Code looks scary until someone reads it out loud in plain words. Here are the two files you'll meet most — every line translated.</p>
+      ${D.codeWalkthroughs.map((w) => `<h3 class="cw-label reveal">${esc(w.label)}</h3>${codeWalk(w)}`).join("")}
+
+      <div class="callout mt-3 reveal">
+        <span class="ca-emoji float-y">🚀</span>
+        <div><strong>Ready for more?</strong> Jump into <a class="link-inline" href="#docker">🐳 Docker Fundamentals</a> or <a class="link-inline" href="#kubernetes">☸️ Kubernetes Architecture</a> for the full interactive diagrams — or open the <a class="link-inline" href="#yaml">📄 YAML Explorer</a> to decode real config files line by line.</div>
+      </div>
+    </div>`;
+  }
+
+  // Beginner code walkthrough: code on the left, plain meaning per line
+  function codeWalk(w) {
+    return `<div class="codewalk reveal">
+      <div class="cw-what">${esc(w.what)}</div>
+      <div class="cw-grid">
+        ${w.lines.map((l, i) => `<div class="cw-row" style="--d:${i * 0.05}s">
+          <code class="cw-code">${esc(l.code)}</code>
+          <div class="cw-plain"><span class="cw-arrow">→</span> ${esc(l.plain)}</div>
+        </div>`).join("")}
+      </div>
+    </div>`;
+  }
+
   /* =====================================================
      HOME / OVERVIEW
      ===================================================== */
   function home() {
     const cards = [
+      { ico: "👋", title: "Start Here (Beginners)", body: "Never coded? Learn both tools through a simple food-truck story, step by step.", view: "guide" },
       { ico: "🐳", title: "Docker Fundamentals", body: "Images, containers, Dockerfile, commands & ports — explained with everyday analogies.", view: "docker" },
       { ico: "☸️", title: "Kubernetes Architecture", body: "The control plane, worker nodes and Pods — told as a busy restaurant story.", view: "kubernetes" },
       { ico: "📄", title: "YAML Explorer", body: "Click any line of Pod, Deployment & Service YAML to see plain-English meaning.", view: "yaml" },
       { ico: "🗺️", title: "Architecture View", body: "The full journey from a developer's laptop to users on the internet.", view: "architecture" },
-      { ico: "🧪", title: "Playground", body: "A live terminal simulator and a try-it-yourself YAML validator.", view: "playground" },
       { ico: "🎯", title: "Interview Q&A", body: "Curated DevOps interview questions with clear, analogy-backed answers.", view: "interview" },
     ];
     return `<div class="view">
       ${head("Interactive DevOps Trainer", `Learn <span class="gradient-text">Docker &amp; Kubernetes</span> the easy way`,
         "No jargon overload. Every idea here comes with a real-life analogy, a plain-words explanation and an animated diagram — so anyone, technical or not, can truly get it.")}
 
+      <div class="hero-cta reveal">
+        <a class="btn btn-primary btn-lg" href="#guide">👋 Start Here — total beginner? Begin the story →</a>
+        <a class="btn btn-lg" href="#docker">🐳 Jump to Docker</a>
+        <a class="btn btn-lg btn-ghost" href="#kubernetes">☸️ Jump to Kubernetes</a>
+      </div>
+
       <div class="stats reveal">
         <div class="stat"><div class="s-num a" data-count="2">0</div><div class="s-lbl">Core Modules</div></div>
         <div class="stat"><div class="s-num b" data-count="9">0</div><div class="s-lbl">Concepts + Analogies</div></div>
-        <div class="stat"><div class="s-num c" data-count="8">0</div><div class="s-lbl">Journey Steps</div></div>
+        <div class="stat"><div class="s-num c" data-count="8">0</div><div class="s-lbl">Beginner Story Steps</div></div>
         <div class="stat"><div class="s-num d" data-count="12">0</div><div class="s-lbl">Interview Q&amp;A</div></div>
       </div>
 
@@ -137,6 +231,8 @@ window.VIEWS = (function () {
     return `<div class="view">
       ${head("🐳 Module 01", `Docker <span class="gradient-text">Fundamentals</span>`,
         "Docker packs an app and everything it needs into one portable box. Let's build the mental model with simple analogies first, then the architecture, then real commands.")}
+
+      ${stepShow(D.dockerHowItWorks, "docker")}
 
       ${sectionTitle("01", "The 4 core ideas", "— each with a real-life analogy")}
       <div class="grid cols-2">
@@ -266,6 +362,8 @@ window.VIEWS = (function () {
     return `<div class="view">
       ${head("☸️ Module 02", `Kubernetes <span class="gradient-text">Architecture</span>`,
         "Kubernetes runs and manages your containers across many machines, automatically. The secret to understanding it: picture a busy restaurant chain.")}
+
+      ${stepShow(D.k8sHowItWorks, "k8s")}
 
       ${sectionTitle("01", "The Restaurant Analogy", "— the whole cluster in one picture 🍽️")}
       <p class="muted reveal">${D.restaurant.intro}</p>
@@ -524,7 +622,7 @@ window.VIEWS = (function () {
   }
 
   return {
-    home, docker, kubernetes, yaml, architecture, playground, builder, interview,
-    yamlCodePanel, yamlFlowPanel,
+    home, guide, docker, kubernetes, yaml, architecture, playground, builder, interview,
+    yamlCodePanel, yamlFlowPanel, stepShow, codeWalk,
   };
 })();

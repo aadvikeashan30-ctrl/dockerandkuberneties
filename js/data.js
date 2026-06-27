@@ -436,11 +436,133 @@ window.DATA = (function () {
     { ico: "🔬", title: "CI/CD pipelines", body: "Code is built into a Docker image, pushed to a registry, then deployed to Kubernetes — the same artifact moves from dev to prod." },
   ];
 
+  /* =========================================================
+     BEGINNER "START HERE" — a friendly, zero-knowledge story
+     Written for someone who has NEVER coded or used a server.
+     ========================================================= */
+  const guideIntro = "Never heard of Docker or Kubernetes? Perfect. Forget the scary words for a minute. We'll learn the whole idea using a tiny food-truck story — one small step at a time. No experience needed.";
+
+  const guideSteps = [
+    {
+      n: 1, ico: "🍔", title: "You make something great",
+      story: "Imagine you cooked an amazing burger at home. It tastes perfect on YOUR stove, with YOUR pans and YOUR ingredients.",
+      tech: "In tech, 'the burger' is your app (a website, a game, a tool). 'Your stove' is your own laptop.",
+      takeaway: "An app is just something you built that does a job.",
+    },
+    {
+      n: 2, ico: "😱", title: "The problem appears",
+      story: "Your friend tries to make your burger in their kitchen — but their stove is different, they're missing an ingredient, and it comes out wrong. 'But it worked in MY kitchen!'",
+      tech: "Software has the exact same problem: an app that runs on your laptop often breaks on someone else's computer or on a server. Different setup, missing pieces.",
+      takeaway: "Code that works on one machine often breaks on another. This is the #1 headache Docker solves.",
+    },
+    {
+      n: 3, ico: "🍱", title: "Docker = a sealed meal-kit",
+      story: "So you pack the burger, the exact ingredients, the recipe AND a tiny portable stove into one sealed box. Now anyone, anywhere, opens the box and gets the same perfect burger.",
+      tech: "Docker bundles your app + everything it needs into one sealed box called a CONTAINER. It runs identically on any computer.",
+      takeaway: "Docker = put your app in a box that runs the same everywhere.",
+    },
+    {
+      n: 4, ico: "📜", title: "The recipe vs the meal",
+      story: "The written recipe is not the food — but follow it and you can cook the same burger a thousand times. Each cooked burger is a fresh serving.",
+      tech: "The recipe is a Docker IMAGE (a blueprint). Each running copy made from it is a CONTAINER (the live app).",
+      takeaway: "Image = recipe (blueprint). Container = the cooked, running app.",
+    },
+    {
+      n: 5, ico: "📈", title: "Now it gets popular",
+      story: "Your burger goes viral. One food truck can't keep up. You need many trucks, someone to open more when queues grow, and someone to replace a truck that breaks down — automatically.",
+      tech: "Running ONE container is easy. Running hundreds, keeping them healthy, and scaling up when busy is hard to do by hand.",
+      takeaway: "Once you have many containers, you need a manager. That manager is Kubernetes.",
+    },
+    {
+      n: 6, ico: "🧑‍🍳", title: "Kubernetes = the restaurant manager",
+      story: "You hire a brilliant manager. You just say 'always keep 5 trucks open.' They open trucks, replace broken ones, send customers to the nearest free truck, and add more during a rush — without you lifting a finger.",
+      tech: "Kubernetes runs and manages your containers across many machines automatically: it scales them, heals them and routes traffic to them.",
+      takeaway: "Kubernetes = the auto-manager that keeps your containers running, healthy and scaled.",
+    },
+    {
+      n: 7, ico: "🍽️", title: "Plates, stations and waiters",
+      story: "In the restaurant: food sits on a PLATE, cooked at a STATION, and a WAITER carries it to whoever ordered — even if the cook changes.",
+      tech: "In Kubernetes: a POD is the plate (holds your container), a NODE is the station (a machine), and a SERVICE is the waiter (a stable address that always finds a healthy Pod).",
+      takeaway: "Pod = plate · Node = kitchen station · Service = waiter.",
+    },
+    {
+      n: 8, ico: "🌍", title: "The whole picture",
+      story: "You cook once, seal it in a box, hand the boxes to the manager, and customers everywhere enjoy the same burger — served fast, never running out.",
+      tech: "You build a Docker image once → Kubernetes runs many copies of it in Pods → a Service exposes them → users worldwide reach your app, which scales and self-heals.",
+      takeaway: "Docker packages it. Kubernetes runs and manages it at scale. Together = modern apps.",
+    },
+  ];
+
+  /* =========================================================
+     ANIMATED "HOW IT WORKS" — stage scripts for the players
+     each stage: { ico, title, caption (simple sentence) }
+     ========================================================= */
+  const dockerHowItWorks = {
+    title: "How Docker Works",
+    subtitle: "Press Play and watch your app travel from your laptop to a running container.",
+    stages: [
+      { ico: "👩‍💻", title: "Write code", caption: "You write your app and a Dockerfile — the recipe that lists how to pack it." },
+      { ico: "🔨", title: "docker build", caption: "Docker reads the recipe and builds an IMAGE: a sealed, stackable blueprint of your app." },
+      { ico: "🖼️", title: "Image ready", caption: "The image now holds your app + all its tools. It can travel to any computer." },
+      { ico: "☁️", title: "Push to registry", caption: "You upload the image to a registry (like Docker Hub) so others can download the exact copy." },
+      { ico: "🟢", title: "docker run", caption: "On any machine, 'docker run' starts a CONTAINER — a live, running copy of the image." },
+      { ico: "🚀", title: "App is live!", caption: "Your app is now running, identical everywhere. The 'works on my machine' problem is gone." },
+    ],
+  };
+
+  const k8sHowItWorks = {
+    title: "How Kubernetes Works",
+    subtitle: "Press Play to follow one request through the cluster — and watch it scale.",
+    stages: [
+      { ico: "🧑‍💻", title: "kubectl apply", caption: "You tell Kubernetes what you want: 'run 3 copies of my app.' That's it — you describe the goal." },
+      { ico: "🛰️", title: "API Server", caption: "Your request enters through the API Server — the cluster's front desk — and is saved." },
+      { ico: "🧭", title: "Scheduler", caption: "The Scheduler picks the best machine (node) for each Pod, like seating guests at free tables." },
+      { ico: "📦", title: "Pods start", caption: "Worker nodes start the Pods. Each Pod runs your container — the actual app." },
+      { ico: "🌐", title: "Service routes", caption: "A Service gives one stable address and shares traffic across all the healthy Pods." },
+      { ico: "📈", title: "Auto-scale & heal", caption: "Busy? Kubernetes adds Pods. A Pod crashes? It instantly creates a new one. All automatic." },
+    ],
+  };
+
+  /* =========================================================
+     CODE WALKTHROUGHS — explained for total beginners
+     ========================================================= */
+  const codeWalkthroughs = [
+    {
+      id: "dockerfile",
+      label: "Dockerfile",
+      what: "A Dockerfile is just a to-do list for packing your app. Docker reads it from top to bottom.",
+      lines: [
+        { code: "FROM node:18", plain: "Start with a kitchen that already has Node.js (a tool to run JavaScript) installed. We don't build the kitchen from scratch." },
+        { code: "WORKDIR /app", plain: "Choose the folder we'll work inside — like picking a clean countertop to cook on." },
+        { code: "COPY . .", plain: "Copy all our project files onto that countertop, ready to use." },
+        { code: "RUN npm install", plain: "Install the extra ingredients (libraries) our app needs to work." },
+        { code: 'CMD ["node", "server.js"]', plain: "The final instruction: when someone starts this box, run our app." },
+      ],
+    },
+    {
+      id: "podyaml",
+      label: "Pod YAML",
+      what: "A Pod YAML is a simple form telling Kubernetes 'please run this one app for me.'",
+      lines: [
+        { code: "apiVersion: v1", plain: "Which version of Kubernetes' 'language' to read this in. Just say v1." },
+        { code: "kind: Pod", plain: "What we're asking for — here, a single Pod (one plate)." },
+        { code: "metadata:", plain: "Basic info section — mainly the name." },
+        { code: "  name: my-pod", plain: "What to call this Pod, so we can find it later." },
+        { code: "spec:", plain: "The 'what I actually want' section begins here." },
+        { code: "  containers:", plain: "The list of apps to put inside this Pod." },
+        { code: "    - name: nginx", plain: "A nickname for the app inside." },
+        { code: "      image: nginx", plain: "Which recipe (image) to run — here, the popular 'nginx' web server." },
+      ],
+    },
+  ];
+
   return {
     // docker
     dockerConcepts, dockerArch, dockerBlocks, dockerVsVm, dockerImages, dockerfile, dockerCommands,
     // kubernetes
     restaurant, masterComponents, workerComponents, k8sConcepts, k8sFlow,
+    // beginner / animated
+    guideIntro, guideSteps, dockerHowItWorks, k8sHowItWorks, codeWalkthroughs,
     // shared
     journey, glossary, yamlSamples, interview, realWorld,
   };
