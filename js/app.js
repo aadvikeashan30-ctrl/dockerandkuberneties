@@ -14,12 +14,14 @@
   const menuToggle = document.getElementById("menuToggle");
   const tip = document.getElementById("floatingTip");
 
-  const VIEW_KEYS = ["home", "guide", "workshop", "docker", "kubernetes", "yaml", "architecture", "playground", "builder", "interview"];
+  const VIEW_KEYS = ["home", "guide", "workshop", "awslab", "docker", "kubernetes", "yaml", "architecture", "playground", "builder", "interview"];
   const visited = new Set(JSON.parse(localStorage.getItem("co_visited") || "[]"));
+  let pendingAws = null; // deep-link target for AWS Lab (#awslab:topic)
 
   /* ---------------- Router ---------------- */
   function currentView() {
-    const h = (location.hash || "#home").replace("#", "");
+    let h = (location.hash || "#home").replace("#", "");
+    if (h.indexOf(":") > -1) { const p = h.split(":"); h = p[0]; pendingAws = p[1]; }
     return VIEW_KEYS.includes(h) ? h : "home";
   }
 
@@ -43,6 +45,7 @@
     if (view === "home") wireHome();
     if (view === "guide") wireGuide();
     if (view === "workshop") wireWorkshop();
+    if (view === "awslab") { wireAwsLab(pendingAws); pendingAws = null; }
     if (view === "docker") wireDocker();
     if (view === "kubernetes") wireKubernetes();
     if (view === "yaml") wireYaml();
@@ -262,11 +265,14 @@
       const t = W.topics[name];
       if (!t) { explain.innerHTML = `<span class="ex-key">${name}</span><div class="ex-body">A hands-on session topic in the workshop.</div>`; return; }
       const linkHtml = t.link ? `<a class="link-inline" href="#${t.link}">Open the ${t.link} module →</a>` : "";
+      const awsId = AWS_MAP[name];
+      const awsBtn = awsId ? `<a class="btn btn-primary mt-3" href="#awslab:${awsId}">▶ Open the full animated lesson</a>` : "";
       explain.innerHTML = `<span class="ex-key">${name}</span>
         <div class="dc-simple" style="margin:10px 0 0"><span class="dc-badge">In simple words</span>${t.simple}</div>
         <div class="analogy-box" style="margin:12px 0"><span class="analogy-emoji float-y">💭</span>
           <div><div class="analogy-title">It's like…</div><div class="analogy-text">${t.analogy}</div></div></div>
-        <div class="ex-body">${t.detail} ${linkHtml}</div>`;
+        <div class="ex-body">${t.detail} ${linkHtml}</div>
+        ${awsBtn}`;
       explain.classList.add("flash");
       setTimeout(() => explain.classList.remove("flash"), 400);
     }
@@ -291,6 +297,74 @@
     });
 
     loadDay(0);
+  }
+
+  // map Workshop Day-1 topic names -> AWS Lab lesson ids (for deep-linking)
+  const AWS_MAP = {
+    "Introduction to Cloud Computing": "cloud", "AWS Global Infrastructure": "global",
+    "AWS Account Setup": "account", "IAM": "iam", "AWS CLI": "cli", "VPC Architecture": "vpc",
+    "Public & Private Subnets": "subnets", "Internet Gateway (IGW)": "igw", "Route Tables": "routes",
+    "Security Groups": "sg", "NACLs": "nacl", "EC2 Deployment": "ec2", "Linux & Windows Servers": "osservers",
+    "Instance Lifecycle Management": "lifecycle", "Custom VPC Design": "customvpc",
+    "Amazon S3 Fundamentals": "s3", "Storage Classes": "storageclasses", "Static Website Hosting": "staticsite",
+    "Amazon RDS (MySQL)": "rds", "Database Connectivity": "dbconn", "Backup & Disaster Recovery": "backup",
+    "VPC Peering": "peering", "Transit Gateway": "transit", "Application Load Balancer (ALB)": "alb",
+    "Target Groups": "targets", "Auto Scaling Groups (ASG)": "asg", "AWS Lambda Fundamentals": "lambda",
+    "Amazon DynamoDB": "dynamo",
+  };
+
+  /* ---------------- AWS CLOUD LAB (course player) ---------------- */
+  function wireAwsLab(initialId) {
+    const A = D.aws;
+    const stage = document.getElementById("awsStage");
+    if (!stage) return;
+    let cur = null;
+    let replayTimer = null;
+
+    function replayExample(id) {
+      const body = document.getElementById("awsExampleBody");
+      if (!body) return;
+      const lines = A.lessons[id].example.lines;
+      clearInterval(replayTimer);
+      body.innerHTML = "";
+      let i = 0;
+      replayTimer = setInterval(() => {
+        if (i >= lines.length) { clearInterval(replayTimer); return; }
+        const span = document.createElement("span");
+        span.className = "ln";
+        span.textContent = lines[i] === "" ? "\u00a0" : lines[i];
+        body.appendChild(span);
+        body.scrollTop = body.scrollHeight;
+        i++;
+      }, 170);
+    }
+
+    function load(id, doScroll) {
+      if (!A.lessons[id]) id = A.order[0];
+      cur = id;
+      stage.innerHTML = V.renderAwsLesson(id);
+      content.querySelectorAll("[data-awsid]").forEach((b) =>
+        b.classList.toggle("active", b.dataset.awsid === id));
+      // wire nav buttons
+      stage.querySelectorAll("[data-awsnav]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (btn.disabled) return;
+          const i = A.order.indexOf(cur);
+          const t = btn.dataset.awsnav === "next" ? A.order[i + 1] : A.order[i - 1];
+          if (t) load(t, true);
+        });
+      });
+      const replay = stage.querySelector("[data-awsreplay]");
+      if (replay) replay.addEventListener("click", () => replayExample(id));
+      stage.querySelectorAll(".reveal").forEach((e) => e.classList.add("in"));
+      replayExample(id);
+      if (doScroll) stage.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    content.querySelectorAll("[data-awsid]").forEach((b) =>
+      b.addEventListener("click", () => load(b.dataset.awsid, true)));
+
+    load(initialId || A.order[0], false);
   }
 
   /* ---------------- DOCKER ---------------- */

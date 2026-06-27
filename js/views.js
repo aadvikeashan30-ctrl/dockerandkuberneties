@@ -163,6 +163,219 @@ window.VIEWS = (function () {
   }
 
   /* =====================================================
+     AWS CLOUD LAB — animated course player (Workshop Day 1)
+     ===================================================== */
+  function awsLab() {
+    const A = D.aws;
+    const first = A.order[0];
+    return `<div class="view">
+      ${head("🎓 Workshop · Day 1 · AWS Cloud Foundations", `AWS <span class="gradient-text">Cloud Lab</span>`,
+        "Every Day-1 topic as an animated mini-lesson: a one-line idea, a real-life analogy, an easy explanation, key points, a live example you can replay, and a moving diagram of how it works. Pick a topic or use Next to go in order.")}
+
+      <div class="awslab-grid">
+        <aside class="awslab-rail reveal">
+          ${A.sessions.map((s) => `<div class="alr-session">
+            <div class="alr-sesshead">${s.ico} ${esc(s.label)} <small>${esc(s.time)}</small></div>
+            ${s.ids.map((id) => `<button class="alr-item" data-awsid="${id}">
+              <span class="alr-ico">${A.lessons[id].ico}</span><span>${esc(A.lessons[id].title)}</span>
+            </button>`).join("")}
+          </div>`).join("")}
+        </aside>
+        <section class="awslab-stage reveal" id="awsStage" style="--d:.08s">
+          ${renderAwsLesson(first)}
+        </section>
+      </div>
+    </div>`;
+  }
+
+  function renderAwsLesson(id) {
+    const A = D.aws;
+    const l = A.lessons[id];
+    if (!l) return "<div class='card'>Lesson not found.</div>";
+    const idx = A.order.indexOf(id);
+    const prev = A.order[idx - 1], next = A.order[idx + 1];
+    // find session label for badge
+    let sess = "";
+    A.sessions.forEach((s) => { if (s.ids.includes(id)) sess = s.label + " · " + s.time; });
+
+    return `<div class="lesson" data-lesson="${id}">
+      <div class="lesson-head">
+        <div class="lesson-ico float-y">${l.ico}</div>
+        <div>
+          <div class="lesson-badges"><span class="lb-num">${idx + 1}/${A.order.length}</span><span class="lb-sess">${esc(sess)}</span></div>
+          <h2 class="lesson-title">${esc(l.title)}</h2>
+        </div>
+      </div>
+
+      <p class="lesson-oneline"><span class="dc-badge">In one line</span> ${esc(l.oneLine)}</p>
+
+      <div class="lesson-body">
+        <div class="lesson-left">
+          <div class="analogy-box"><span class="analogy-emoji float-y">💭</span>
+            <div><div class="analogy-title">Think of it like…</div><div class="analogy-text">${esc(l.analogy)}</div></div>
+          </div>
+          <p class="lesson-explain">${esc(l.explain)}</p>
+          <ul class="point-list">${l.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
+        </div>
+        <div class="lesson-right">
+          <div class="graphic-card">
+            <div class="graphic-label">▶ Live visual — how it works</div>
+            ${awsGraphic(l.graphic, l.focus)}
+          </div>
+        </div>
+      </div>
+
+      <div class="lesson-example">
+        <div class="code-block">
+          <div class="code-head">
+            <span class="code-dots"><span class="r"></span><span class="y"></span><span class="g"></span></span>
+            <span class="code-title">live example — ${esc(l.example.label)}</span>
+            <button class="code-copy" data-awsreplay>↻ Replay</button>
+          </div>
+          <pre class="code-body" id="awsExampleBody">${l.example.lines.map((x) => `<span class="ln">${esc(x)}</span>`).join("")}</pre>
+        </div>
+      </div>
+
+      <div class="lesson-nav">
+        <button class="btn ${prev ? "" : "is-disabled"}" data-awsnav="prev" ${prev ? "" : "disabled"}>← ${prev ? esc(A.lessons[prev].title) : "Start"}</button>
+        <button class="btn btn-primary ${next ? "" : "is-disabled"}" data-awsnav="next" ${next ? "" : "disabled"}>${next ? esc(A.lessons[next].title) : "Finished 🎉"} →</button>
+      </div>
+    </div>`;
+  }
+
+  /* ---------- Animated AWS graphics library (CSS-driven) ---------- */
+  function awsGraphic(kind, focus) {
+    switch (kind) {
+      case "cloud": return `<div class="g g-cloud">
+        <div class="gc-side"><span class="float-y">💻</span><span class="float-y" style="animation-delay:.4s">📱</span><span class="float-y" style="animation-delay:.8s">🖥️</span><div class="g-cap">Your devices</div></div>
+        <div class="gc-wire"><span class="gc-pkt"></span><span class="gc-pkt" style="animation-delay:1s"></span><span class="gc-pkt" style="animation-delay:2s"></span></div>
+        <div class="gc-cloud"><div class="gc-cloud-emoji">☁️</div><div class="gc-mini">⚙️ 🗄️ ⚡</div><div class="g-cap">AWS Cloud</div></div>
+      </div>`;
+
+      case "globe": return `<div class="g g-globe">
+        <div class="gg-sphere"><span class="gg-ring"></span><span class="gg-ring r2"></span></div>
+        ${[["18%","26%","Mumbai"],["70%","20%","Virginia"],["44%","64%","Ireland"],["80%","60%","Tokyo"]].map((r, i) => `<span class="gg-region" style="left:${r[0]};top:${r[1]};animation-delay:${i * .5}s"><b>📍</b><i>${r[2]}</i><em class="gg-az"></em><em class="gg-az a2"></em></span>`).join("")}
+        <div class="g-cap">Regions · each with isolated Availability Zones</div>
+      </div>`;
+
+      case "iam": return `<div class="g g-iam">
+        <div class="gi-user"><div class="gi-card">🪪<small>User</small></div></div>
+        <div class="gi-gate"><div class="gi-gate-bar"></div><div class="g-cap">Policy gate</div></div>
+        <div class="gi-tokens"><span class="gi-token allow">✓ allow s3:Read</span><span class="gi-token deny">✗ deny s3:Delete</span></div>
+        <div class="gi-res"><span>🪣 S3</span><span>🖥️ EC2</span></div>
+      </div>`;
+
+      case "cli": return `<div class="g g-cli">
+        <div class="gcli-win"><div class="gcli-bar"><span></span><span></span><span></span></div>
+          <div class="gcli-body"><span class="gcli-line"><b>$</b> aws s3 ls<span class="gcli-cursor"></span></span>
+          <span class="gcli-out">2026-06-29 10:14  my-bucket</span>
+          <span class="gcli-out">2026-06-29 10:15  my-app-assets</span></div>
+        </div>
+      </div>`;
+
+      case "vpc": return `<div class="g g-vpc focus-${focus || "all"}">
+        <div class="gv-net">🌍<small>Internet</small></div>
+        <div class="gv-flow"><span class="gv-pkt"></span></div>
+        <div class="gv-igw">🚪<small>IGW</small></div>
+        <div class="gv-box"><div class="gv-boxlabel">VPC 10.0.0.0/16</div>
+          <div class="gv-rt">🪧 Route Table<small>0.0.0.0/0 → IGW</small></div>
+          <div class="gv-subnets">
+            <div class="gv-subnet pub"><div class="gv-sublabel">Public Subnet</div><div class="gv-node">🖥️<span class="gv-sg"></span><small>web · SG</small></div></div>
+            <div class="gv-subnet priv"><div class="gv-sublabel">Private Subnet</div><div class="gv-node">🗄️<small>database</small></div></div>
+          </div>
+          <div class="gv-nacl-tag">NACL — subnet firewall</div>
+        </div>
+      </div>`;
+
+      case "ec2": return `<div class="g g-ec2 ${focus === "os" ? "show-os" : ""}">
+        <div class="ge-rack"><div class="ge-server"><span class="ge-led"></span>🖥️<small>${focus === "os" ? "AMI: Linux / Windows" : "t3.micro"}</small></div></div>
+        <div class="ge-boot"><span class="ge-state">power on</span><span class="ge-arrow">→</span><span class="ge-state run">running ✅</span></div>
+        ${focus === "os" ? `<div class="ge-os"><span>🐧 Linux · SSH :22</span><span>🪟 Windows · RDP :3389</span></div>` : `<div class="g-cap">Connect via SSH and your app is live</div>`}
+      </div>`;
+
+      case "ec2life": return `<div class="g g-ec2life">
+        ${["pending", "running", "stopping", "stopped", "terminated"].map((s, i) => `<div class="gl-state s-${s}" style="--i:${i}"><span class="gl-dot"></span>${s}</div>${i < 4 ? '<span class="gl-arr">→</span>' : ""}`).join("")}
+        <div class="g-cap">A highlight cycles through the instance states</div>
+      </div>`;
+
+      case "s3": return `<div class="g g-s3">
+        <div class="gs3-drop"><span class="gs3-file">📄</span><span class="gs3-file f2">🖼️</span><span class="gs3-file f3">🎞️</span></div>
+        <div class="gs3-bucket">🪣<div class="gs3-bname">my-bucket</div></div>
+        <div class="g-cap">Objects (files) drop into a bucket — unlimited & durable</div>
+      </div>`;
+
+      case "storage": return `<div class="g g-storage">
+        <div class="gst-tier t1"><b>Standard</b><small>hot · $$$</small></div>
+        <div class="gst-tier t2"><b>Standard-IA</b><small>rare · $$</small></div>
+        <div class="gst-tier t3"><b>Glacier</b><small>archive · $</small></div>
+        <span class="gst-file">📦</span>
+        <div class="g-cap">A file slides to a cheaper tier as it cools down</div>
+      </div>`;
+
+      case "staticsite": return `<div class="g g-static">
+        <div class="gss-bucket">🪣<small>index.html</small></div>
+        <span class="gss-arrow">→</span>
+        <div class="gss-browser"><div class="gss-bar"><span></span><span></span><span></span><i>my-site.s3-website…</i></div><div class="gss-page"><span class="gss-hero"></span><span class="gss-row"></span><span class="gss-row short"></span></div></div>
+      </div>`;
+
+      case "rds": return `<div class="g g-rds focus-${focus || "ha"}">
+        ${focus === "conn" ? `<div class="grd-app">🖥️<small>app</small></div><span class="grd-link"><span class="grd-pkt"></span></span>` : ""}
+        <div class="grd-primary">🗄️<small>Primary</small></div>
+        <div class="grd-sync"><span class="grd-syncpkt"></span></div>
+        <div class="grd-standby">🗄️<small>${focus === "backup" ? "Snapshot" : "Standby (Multi-AZ)"}</small></div>
+        ${focus === "backup" ? `<div class="grd-snaps">📦 📦 📦<small>automated backups</small></div>` : `<div class="g-cap">Managed DB with an automatic standby copy</div>`}
+      </div>`;
+
+      case "peering": return focus === "hub"
+        ? `<div class="g g-hub">
+            <div class="gh-center">✈️<small>Transit GW</small></div>
+            ${[0, 1, 2, 3].map((i) => `<div class="gh-vpc v${i}">🏗️<small>VPC</small><span class="gh-spoke"></span></div>`).join("")}
+            <div class="g-cap">One hub connects many VPCs</div>
+          </div>`
+        : `<div class="g g-peer">
+            <div class="gp-vpc">🏗️<small>VPC A</small></div>
+            <div class="gp-bridge"><span class="gp-pkt"></span><span class="gp-pkt back"></span></div>
+            <div class="gp-vpc">🏗️<small>VPC B</small></div>
+            <div class="g-cap">A private bridge between two VPCs</div>
+          </div>`;
+
+      case "alb": return `<div class="g g-alb">
+        <div class="ga-user">👥<small>users</small></div>
+        <span class="ga-in"><span class="ga-pkt"></span></span>
+        <div class="ga-lb">⚖️<small>ALB</small></div>
+        <div class="ga-targets">
+          <div class="ga-t"><span class="ga-out"></span>🖥️ ✅</div>
+          <div class="ga-t"><span class="ga-out" style="animation-delay:.6s"></span>🖥️ ✅</div>
+          <div class="ga-t down">🖥️ ✖</div>
+        </div>
+        <div class="g-cap">${focus === "targets" ? "The Target Group = the list of servers behind the ALB" : "Traffic is spread across healthy servers"}</div>
+      </div>`;
+
+      case "asg": return `<div class="g g-asg">
+        <div class="gasg-meter"><span class="gasg-fill"></span><small>load</small></div>
+        <div class="gasg-servers"><span>🖥️</span><span>🖥️</span><span class="gasg-extra">🖥️</span><span class="gasg-extra e2">🖥️</span></div>
+        <div class="g-cap">Servers appear when load rises, leave when it drops</div>
+      </div>`;
+
+      case "lambda": return `<div class="g g-lambda">
+        <div class="gla-event">📩<small>event</small></div>
+        <span class="gla-arrow">→</span>
+        <div class="gla-fn">λ<span class="gla-spark"></span><small>function</small></div>
+        <span class="gla-arrow">→</span>
+        <div class="gla-res">✅<small>response</small></div>
+        <div class="g-cap">Runs only when triggered — pay per millisecond</div>
+      </div>`;
+
+      case "dynamo": return `<div class="g g-dynamo">
+        <div class="gd-grid">${Array.from({ length: 12 }).map((_, i) => `<span class="gd-cell c${i}"></span>`).join("")}</div>
+        <div class="g-cap">Key → value lockers, returned in milliseconds ⚡</div>
+      </div>`;
+
+      default: return `<div class="g g-generic"><div class="float-y" style="font-size:46px">☁️</div><div class="g-cap">AWS hands-on concept</div></div>`;
+    }
+  }
+
+  /* =====================================================
      WORKSHOP — Cambridge Institute 5-Day DevOps schedule
      ===================================================== */
   function workshop() {
@@ -242,6 +455,7 @@ window.VIEWS = (function () {
     const cards = [
       { ico: "👋", title: "Start Here (Beginners)", body: "Never coded? Learn both tools through a simple food-truck story, step by step.", view: "guide" },
       { ico: "🎓", title: "5-Day DevOps Workshop", body: "The full Cambridge Institute workshop agenda — every AWS, Docker, K8s & AI topic explained.", view: "workshop" },
+      { ico: "☁️", title: "AWS Cloud Lab", body: "Day-1 AWS topics as animated mini-lessons with live examples — VPC, EC2, S3, ALB, Lambda & more.", view: "awslab" },
       { ico: "🐳", title: "Docker Fundamentals", body: "Images, containers, Dockerfile, commands & ports — explained with everyday analogies.", view: "docker" },
       { ico: "☸️", title: "Kubernetes Architecture", body: "The control plane, worker nodes and Pods — told as a busy restaurant story.", view: "kubernetes" },
       { ico: "📄", title: "YAML Explorer", body: "Click any line of Pod, Deployment & Service YAML to see plain-English meaning.", view: "yaml" },
@@ -696,7 +910,7 @@ window.VIEWS = (function () {
   }
 
   return {
-    home, guide, workshop, docker, kubernetes, yaml, architecture, playground, builder, interview,
-    yamlCodePanel, yamlFlowPanel, stepShow, codeWalk, workshopDayPanel,
+    home, guide, workshop, awslab: awsLab, docker, kubernetes, yaml, architecture, playground, builder, interview,
+    yamlCodePanel, yamlFlowPanel, stepShow, codeWalk, workshopDayPanel, renderAwsLesson, awsGraphic,
   };
 })();
