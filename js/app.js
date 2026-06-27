@@ -105,6 +105,8 @@
       elm.addEventListener("mouseleave", hideTip);
       elm.addEventListener("focus", () => showTip(elm));
       elm.addEventListener("blur", hideTip);
+      // touch devices: tap to reveal, auto-hide
+      elm.addEventListener("click", () => { showTip(elm); clearTimeout(elm._tipT); elm._tipT = setTimeout(hideTip, 2800); });
     });
     // copy buttons
     content.querySelectorAll("[data-copy]").forEach((btn) => {
@@ -754,8 +756,22 @@
   }
 
   /* ---------------- boot ---------------- */
+  const progressBar = document.getElementById("scrollProgress");
+  function updateScrollProgress() {
+    const el = document.documentElement;
+    const max = el.scrollHeight - el.clientHeight;
+    const pct = max > 0 ? Math.min(100, (el.scrollTop / max) * 100) : 0;
+    if (progressBar) progressBar.style.width = pct + "%";
+  }
   window.addEventListener("hashchange", render);
-  window.addEventListener("scroll", hideTip, true);
+  window.addEventListener("scroll", () => { hideTip(); updateScrollProgress(); }, { passive: true, capture: true });
+  window.addEventListener("scroll", updateScrollProgress, { passive: true });
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 900) closeSidebar();
+    updateScrollProgress();
+  });
+  window.addEventListener("orientationchange", () => setTimeout(updateScrollProgress, 200));
   updateProgress();
+  updateScrollProgress();
   render();
 })();

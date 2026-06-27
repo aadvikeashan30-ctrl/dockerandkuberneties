@@ -399,16 +399,19 @@ body {
   .stats { grid-template-columns: repeat(2,1fr); }
   .explain-card { position: static; }
 }
-@media (max-width: 760px) {
-  .topbar { display: flex; }
+@media (max-width: 900px) {
+  .topbar { display: flex; padding-top: calc(12px + env(safe-area-inset-top)); padding-left: calc(16px + env(safe-area-inset-left)); padding-right: calc(16px + env(safe-area-inset-right)); }
   .sidebar {
-    position: fixed; top: 0; left: 0; z-index: 60; height: 100vh;
+    position: fixed; top: 0; left: 0; z-index: 60; height: 100vh; height: 100dvh;
+    padding-top: calc(26px + env(safe-area-inset-top)); padding-bottom: calc(26px + env(safe-area-inset-bottom));
+    padding-left: calc(18px + env(safe-area-inset-left));
     transform: translateX(-105%); transition: transform .3s cubic-bezier(.2,.7,.2,1);
+    width: min(86vw, 320px);
   }
   .sidebar.open { transform: translateX(0); box-shadow: 30px 0 80px rgba(0,0,0,.6); }
   .scrim { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.5); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: .3s; }
   .scrim.show { opacity: 1; pointer-events: auto; }
-  .content { padding: 24px 18px 70px; }
+  .content { padding: 22px 18px 90px; }
   .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
   .cluster { grid-template-columns: 1fr; }
 }
@@ -1138,3 +1141,172 @@ body::after {
 .gmk-q, .gmk-a { padding: 11px 15px; border-radius: 14px; font-size: 13px; max-width: 80%; }
 .gmk-q { background: rgba(120,140,255,.12); border: 1px solid var(--stroke); align-self: flex-start; }
 .gmk-a { background: rgba(67,245,168,.1); border: 1px solid rgba(67,245,168,.3); color: var(--accent-green); align-self: flex-end; animation: capIn .5s ease .5s both; }
+
+
+/* =========================================================
+   RESPONSIVE PERFECTION + 2026 POLISH (v4)
+   Targets: iOS/Android phones, tablets, laptops, desktops
+   ========================================================= */
+
+/* ---- Top scroll-progress bar (2026) ---- */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+  z-index: 200; pointer-events: none;
+  background: linear-gradient(90deg, var(--neon), var(--neon-2), var(--neon-3));
+  box-shadow: 0 0 12px var(--neon);
+  transition: width .1s linear;
+}
+
+/* ---- Prevent any accidental horizontal overflow ---- */
+html, body { max-width: 100%; overflow-x: hidden; }
+.content, .view, .card, .stepshow, .lesson, .ws-banner { min-width: 0; max-width: 100%; }
+pre, code, .code-body, .term-body, .editor-area { max-width: 100%; }
+img, svg, video { max-width: 100%; height: auto; }
+/* tables / wide rows scroll inside instead of breaking layout */
+.glossary, .vs-table, .codewalk, .ws-grid, .yaml-grid { max-width: 100%; }
+
+/* ---- Smoother momentum scrolling on iOS ---- */
+.term-body, .code-body, .flow-wrap, .awslab-rail, .editor-area, .nav, .yaml-tabs, .ws-tabs, .filter-bar, .cmd-chips, .ss-track {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---- iOS safe-area for main content & topbar brand ---- */
+@supports (padding: env(safe-area-inset-top)) {
+  .content { padding-left: max(env(safe-area-inset-left), 0px); padding-right: max(env(safe-area-inset-right), 0px); }
+}
+
+/* =========================================================
+   TABLET  (max-width: 900px)
+   ========================================================= */
+@media (max-width: 900px) {
+  .page-title { font-size: clamp(24px, 6vw, 34px); }
+  .section-title { font-size: 18px; margin: 30px 0 14px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+
+  /* Animated Lab: rail becomes a horizontal scroll strip on top */
+  .awslab-grid { grid-template-columns: 1fr; gap: 14px; }
+  .awslab-rail {
+    position: static; max-height: none; flex-direction: row; flex-wrap: nowrap;
+    overflow-x: auto; gap: 10px; padding-bottom: 8px; scroll-snap-type: x mandatory;
+  }
+  .awslab-rail::-webkit-scrollbar { height: 6px; }
+  .alr-group { min-width: 78vw; max-width: 80vw; flex: 0 0 auto; scroll-snap-align: start; }
+  .lesson-body { grid-template-columns: 1fr; }
+  .graphic-card { position: static; }
+
+  /* Workshop + YAML two-column -> single */
+  .ws-grid, .yaml-grid, .editor-grid, .builder-wrap { grid-template-columns: 1fr; }
+  .ws-explain, .explain-card { position: static; }
+}
+
+/* =========================================================
+   PHONE  (max-width: 600px)
+   ========================================================= */
+@media (max-width: 600px) {
+  .content { padding: 18px 14px calc(96px + env(safe-area-inset-bottom)); }
+  .page-head { margin-bottom: 22px; }
+  .page-title { font-size: clamp(23px, 7.5vw, 30px); line-height: 1.12; }
+  .page-sub { font-size: 14px; }
+  .eyebrow { font-size: 10.5px; padding: 5px 10px; }
+
+  /* generous tap targets everywhere */
+  .nav-item { padding: 13px 13px; }
+  .btn { padding: 12px 16px; }
+  .ws-chip, .cmd-chip, .chip-filter, .yaml-tab, .alr-item, .qa-q { min-height: 44px; }
+  .ws-chip, .cmd-chip { font-size: 13px; }
+
+  /* hero buttons full width & stacked */
+  .hero-cta { gap: 10px; }
+  .hero-cta .btn { width: 100%; justify-content: center; }
+
+  /* stats: keep 2-up but tighter */
+  .stats { gap: 10px; margin: 18px 0; }
+  .stat { padding: 14px 10px; } .stat .s-num { font-size: 24px; }
+
+  /* cards a touch tighter */
+  .card { padding: 18px; }
+  .deep-card .analogy-box { flex-direction: row; }
+
+  /* code/terminal readable but compact */
+  .code-body, .term-body, .editor-area { font-size: 12px; }
+  .term-body { height: 260px; }
+
+  /* lesson player */
+  .lesson-head { gap: 12px; }
+  .lesson-ico { font-size: 38px; }
+  .lesson-title { font-size: clamp(20px, 6.5vw, 26px); }
+  .lesson-oneline { font-size: 15px; }
+  .lesson-nav { position: sticky; bottom: 0; z-index: 5; gap: 8px;
+    padding: 10px 0 calc(8px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--bg-0) 60%, transparent); }
+  .lesson-nav .btn { flex: 1; max-width: none; font-size: 12.5px; padding: 13px 10px; }
+  .alr-group { min-width: 84vw; max-width: 86vw; }
+
+  /* graphics fit small screens */
+  .g { min-height: 200px; padding: 14px; }
+  .g-cloud, .g-iam, .g-rds, .g-peer, .g-alb, .g-lambda, .g-static, .g-observ,
+  .g-dockerflow, .g-k8sflow, .g-rag, .g-bedrock, .g-terraform { gap: 8px; }
+  .gg-sphere { width: 120px; height: 120px; }
+
+  /* workshop banner stacks */
+  .ws-banner { flex-direction: column; text-align: center; gap: 14px; }
+  .ws-badge-5d { margin: 0 auto; }
+  .ws-tab { flex: 1; justify-content: center; }
+
+  /* glossary/vs tables -> stacked rows */
+  .gl-row, .vs-row { grid-template-columns: 1fr; gap: 4px; padding: 12px 14px; }
+  .gl-head, .vs-head { display: none; }
+  .gl-term { font-size: 15px; }
+  .vs-label { color: var(--neon); }
+  .vs-vm::before { content: "VM: "; color: var(--accent-amber); }
+  .vs-cont::before { content: "Container: "; color: var(--neon); }
+
+  /* timeline tighter */
+  .timeline { padding-left: 26px; } .tl-dot { left: -38px; width: 32px; height: 32px; font-size: 15px; }
+
+  /* code walkthrough single column already; tighten */
+  .cw-row { padding: 11px 13px; }
+
+  /* floating tooltip: wider, anchored feel */
+  .floating-tip { max-width: min(90vw, 320px); }
+
+  /* diagram builder: shorter canvas */
+  .canvas { min-height: 320px; }
+}
+
+/* very small phones */
+@media (max-width: 380px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  .brand-name { font-size: 16px; }
+  .lesson-title { font-size: 19px; }
+}
+
+/* landscape phones: let content breathe */
+@media (max-height: 480px) and (orientation: landscape) {
+  .sidebar { padding-top: 14px; }
+  .g { min-height: 170px; }
+}
+
+/* ---- Larger desktops: a bit more room ---- */
+@media (min-width: 1500px) {
+  .content { padding-left: clamp(40px, 6vw, 90px); padding-right: clamp(40px, 6vw, 90px); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ---- Touch devices: bigger hit areas, no hover-only reliance ---- */
+@media (hover: none) {
+  .card:hover { transform: none; }
+  .nav-item:hover { transform: none; }
+  .flow-node:active, .comp:active, .ws-chip:active { transform: scale(.98); }
+}
+
+/* ---- 2026 polish: refined focus rings & selection ---- */
+::selection { background: rgba(54,198,255,.3); color: #fff; }
+a:focus-visible, button:focus-visible, .nav-item:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--neon); outline-offset: 2px; border-radius: 8px;
+}
+.btn:active { transform: translateY(1px) scale(.99); }
+
+/* subtle entrance for the whole app shell */
+.layout { animation: shellIn .6s ease; }
+@keyframes shellIn { from { opacity: 0; } }
