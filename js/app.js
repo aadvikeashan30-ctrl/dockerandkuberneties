@@ -105,6 +105,51 @@
         copyText(text, btn);
       });
     });
+    // technical-detail toggles on deep cards
+    content.querySelectorAll("[data-techtoggle]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const panel = btn.nextElementSibling;
+        const open = panel.hasAttribute("hidden");
+        if (open) { panel.removeAttribute("hidden"); btn.textContent = "🔬 Hide the technical detail"; }
+        else { panel.setAttribute("hidden", ""); btn.textContent = "🔬 Show the technical detail"; }
+      });
+    });
+    // scroll-reveal
+    setupReveal();
+  }
+
+  /* ---------------- Scroll reveal ---------------- */
+  let revealObserver = null;
+  function setupReveal() {
+    const els = content.querySelectorAll(".reveal");
+    if (!("IntersectionObserver" in window)) { els.forEach((e) => e.classList.add("in")); return; }
+    if (revealObserver) revealObserver.disconnect();
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) { en.target.classList.add("in"); revealObserver.unobserve(en.target); }
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+    els.forEach((e) => revealObserver.observe(e));
+    // reveal anything already in view on next frame
+    requestAnimationFrame(() => {
+      els.forEach((e) => { const r = e.getBoundingClientRect(); if (r.top < window.innerHeight) e.classList.add("in"); });
+    });
+  }
+
+  /* ---------------- Count-up numbers ---------------- */
+  function countUp() {
+    content.querySelectorAll("[data-count]").forEach((el) => {
+      const target = +el.getAttribute("data-count");
+      if (!target) { el.textContent = el.getAttribute("data-count"); return; }
+      let cur = 0;
+      const step = Math.max(1, Math.round(target / 24));
+      const tick = () => {
+        cur = Math.min(target, cur + step);
+        el.textContent = cur;
+        if (cur < target) requestAnimationFrame(tick);
+      };
+      tick();
+    });
   }
 
   function copyText(text, btn) {
@@ -123,6 +168,7 @@
 
   /* ---------------- HOME ---------------- */
   function wireHome() {
+    countUp();
     content.querySelectorAll("[data-goto]").forEach((card) => {
       const go = () => { location.hash = "#" + card.dataset.goto; };
       card.addEventListener("click", go);
@@ -151,7 +197,9 @@
         content.querySelectorAll("[data-dnode]").forEach((x) => x.classList.remove("active"));
         n.classList.add("active");
         const node = D.dockerArch.find((d) => d.id === n.dataset.dnode);
-        detail.innerHTML = `<h4>${node.ico} ${node.title}</h4><p>${node.detail}</p>`;
+        detail.innerHTML = `<h4>${node.ico} ${node.title}</h4><p>${node.detail}</p>
+          <div class="dp-analogy">🔎 Like: ${node.analogy}</div>
+          <ul class="dp-points">${node.points.map((p) => `<li>${p}</li>`).join("")}</ul>`;
       };
       n.addEventListener("click", act);
       n.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); act(); } });
@@ -195,7 +243,9 @@
         content.querySelectorAll("[data-kcomp]").forEach((x) => x.classList.remove("active"));
         c.classList.add("active");
         const comp = all.find((x) => x.id === c.dataset.kcomp);
-        detail.innerHTML = `<h4>${comp.ico} ${comp.name}</h4><p>${comp.detail}</p>`;
+        detail.innerHTML = `<h4>${comp.ico} ${comp.name}</h4><p>${comp.detail}</p>
+          <div class="dp-analogy">${comp.analogy}</div>
+          <ul class="dp-points">${comp.points.map((p) => `<li>${p}</li>`).join("")}</ul>`;
       };
       c.addEventListener("click", act);
       c.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); act(); } });
@@ -207,7 +257,8 @@
         content.querySelectorAll("[data-knode]").forEach((x) => x.classList.remove("active"));
         n.classList.add("active");
         const node = D.k8sFlow.find((d) => d.id === n.dataset.knode);
-        flowDetail.innerHTML = `<h4>${node.ico} ${node.title}</h4><p>${node.detail}</p>`;
+        flowDetail.innerHTML = `<h4>${node.ico} ${node.title}</h4><p>${node.detail}</p>
+          <div class="dp-analogy">🔎 Like: ${node.analogy}</div>`;
       });
     });
   }
@@ -237,7 +288,9 @@
           codeEl.querySelectorAll("[data-ykey]").forEach((x) => x.classList.remove("sel"));
           line.classList.add("sel");
           const info = sample.explain[line.dataset.ykey];
-          if (info) explain.innerHTML = `<span class="ex-key">${info.key}</span><div class="ex-body">${info.body}</div>`;
+          if (info) explain.innerHTML = `<span class="ex-key">${info.key}</span>`
+            + (info.plain ? `<div class="dc-simple" style="margin:8px 0 0"><span class="dc-badge">Plain words</span>${info.plain}</div>` : "")
+            + `<div class="ex-body">${info.body}</div>`;
         };
         line.addEventListener("click", select);
         line.addEventListener("mouseenter", select);
@@ -297,7 +350,7 @@
       const id = n.dataset.anode || n.dataset.anode2;
       const node = map[id];
       if (!node) return;
-      n.setAttribute("data-tip", node.detail);
+      n.setAttribute("data-tip", node.detail + (node.analogy ? "<br><br>🔎 Like: " + node.analogy : ""));
       n.setAttribute("data-tip-key", node.title);
       n.addEventListener("mouseenter", () => showTip(n));
       n.addEventListener("mousemove", () => positionTip(n));

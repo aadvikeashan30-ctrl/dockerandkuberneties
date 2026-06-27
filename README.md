@@ -8,6 +8,17 @@ A modern, futuristic, **single-page educational web app** that teaches **Docker*
 
 ---
 
+## 🧠 Built for everyone (even non-tech readers)
+
+Every concept comes with **three layers** so anyone can follow:
+1. **In simple words** — a one-line plain-English explanation
+2. **A real-life analogy** — e.g. an image is a *recipe*, a container is the *cooked dish*, Kubernetes is a *busy restaurant*
+3. **Show the technical detail** — an optional toggle for when you're ready to go deeper
+
+Plus a **glossary table** (tech term → plain meaning → "it's like…"), a **Docker vs Virtual Machine** comparison (houses vs apartments), and an **8-step end-to-end journey timeline** from a developer's idea to a live app.
+
+The whole UI is animated: scroll-reveal entrances, floating icons, shimmering gradient headings, count-up stats, flowing diagram arrows, a breathing Pod, and a glowing journey timeline.
+
 ## ✨ Features
 
 ### 🐳 Docker Fundamentals
