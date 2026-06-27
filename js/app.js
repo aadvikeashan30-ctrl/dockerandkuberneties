@@ -20,8 +20,12 @@
 
   /* ---------------- Router ---------------- */
   function currentView() {
-    let h = (location.hash || "#home").replace("#", "");
-    if (h.indexOf(":") > -1) { const p = h.split(":"); h = p[0]; pendingAws = p[1]; }
+    let raw = location.hash || "#home";
+    try { raw = decodeURIComponent(raw); } catch (e) {}
+    let h = raw.replace(/^#/, "");
+    // accept a separator (':' or '/') for deep-links like #awslab:sg or #awslab/sg
+    const sep = h.search(/[:\/]/);
+    if (sep > -1) { pendingAws = h.slice(sep + 1); h = h.slice(0, sep); }
     return VIEW_KEYS.includes(h) ? h : "home";
   }
 
@@ -299,8 +303,9 @@
     loadDay(0);
   }
 
-  // map Workshop Day-1 topic names -> AWS Lab lesson ids (for deep-linking)
+  // map ALL Workshop topic names -> Animated Lab lesson ids (for deep-linking)
   const AWS_MAP = {
+    // Day 1 — AWS
     "Introduction to Cloud Computing": "cloud", "AWS Global Infrastructure": "global",
     "AWS Account Setup": "account", "IAM": "iam", "AWS CLI": "cli", "VPC Architecture": "vpc",
     "Public & Private Subnets": "subnets", "Internet Gateway (IGW)": "igw", "Route Tables": "routes",
@@ -311,11 +316,22 @@
     "VPC Peering": "peering", "Transit Gateway": "transit", "Application Load Balancer (ALB)": "alb",
     "Target Groups": "targets", "Auto Scaling Groups (ASG)": "asg", "AWS Lambda Fundamentals": "lambda",
     "Amazon DynamoDB": "dynamo",
+    // Day 2 — DevOps / Docker / Kubernetes
+    "DevOps Culture": "devops", "SDLC": "sdlc", "Docker Architecture": "dockerarch",
+    "Docker Images & Containers": "dockerimg", "Dockerfiles": "dockerfile",
+    "Kubernetes Architecture": "k8sarch", "Minikube Setup": "minikube", "Pod Deployment": "poddeploy",
+    "CI/CD Pipelines": "cicd", "Jenkins Integration": "jenkins", "Terraform IaC": "terraform",
+    // Day 3 — Monitoring & AI
+    "Prometheus Monitoring": "prometheus", "Cluster Observability": "observability", "Amazon Bedrock": "bedrock",
+    "Prompt Engineering": "prompt", "Foundation Models": "foundation", "RAG": "rag",
+    "AI Chatbot Project": "chatbot", "Project Demonstration & Certification": "cert",
+    // Days 4 & 5
+    "Mock Interview": "mock",
   };
 
-  /* ---------------- AWS CLOUD LAB (course player) ---------------- */
+  /* ---------------- ANIMATED LAB (course player) ---------------- */
   function wireAwsLab(initialId) {
-    const A = D.aws;
+    const A = D.lab;
     const stage = document.getElementById("awsStage");
     if (!stage) return;
     let cur = null;

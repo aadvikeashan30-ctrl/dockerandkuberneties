@@ -166,19 +166,22 @@ window.VIEWS = (function () {
      AWS CLOUD LAB — animated course player (Workshop Day 1)
      ===================================================== */
   function awsLab() {
-    const A = D.aws;
+    const A = D.lab;
     const first = A.order[0];
     return `<div class="view">
-      ${head("🎓 Workshop · Day 1 · AWS Cloud Foundations", `AWS <span class="gradient-text">Cloud Lab</span>`,
-        "Every Day-1 topic as an animated mini-lesson: a one-line idea, a real-life analogy, an easy explanation, key points, a live example you can replay, and a moving diagram of how it works. Pick a topic or use Next to go in order.")}
+      ${head("🎓 Workshop · Animated Lessons", `The <span class="gradient-text">Animated Lab</span>`,
+        "Every workshop topic — all 5 days, nothing skipped — as an animated mini-lesson: a one-line idea, a real-life analogy, an easy explanation, key points, a live example you can replay, and a moving diagram of how it works. Pick any topic or use Next to go in order.")}
 
       <div class="awslab-grid">
         <aside class="awslab-rail reveal">
-          ${A.sessions.map((s) => `<div class="alr-session">
-            <div class="alr-sesshead">${s.ico} ${esc(s.label)} <small>${esc(s.time)}</small></div>
-            ${s.ids.map((id) => `<button class="alr-item" data-awsid="${id}">
-              <span class="alr-ico">${A.lessons[id].ico}</span><span>${esc(A.lessons[id].title)}</span>
-            </button>`).join("")}
+          ${A.groups.map((g) => `<div class="alr-group">
+            <div class="alr-day">${g.ico} Day ${g.day} — ${esc(g.title)}</div>
+            ${g.sessions.map((s) => `<div class="alr-session">
+              <div class="alr-sesshead">${s.ico} ${esc(s.label)} <small>${esc(s.time)}</small></div>
+              ${s.ids.map((id) => `<button class="alr-item" data-awsid="${id}">
+                <span class="alr-ico">${A.lessons[id].ico}</span><span>${esc(A.lessons[id].title)}</span>
+              </button>`).join("")}
+            </div>`).join("")}
           </div>`).join("")}
         </aside>
         <section class="awslab-stage reveal" id="awsStage" style="--d:.08s">
@@ -189,14 +192,17 @@ window.VIEWS = (function () {
   }
 
   function renderAwsLesson(id) {
-    const A = D.aws;
+    const A = D.lab;
     const l = A.lessons[id];
     if (!l) return "<div class='card'>Lesson not found.</div>";
     const idx = A.order.indexOf(id);
     const prev = A.order[idx - 1], next = A.order[idx + 1];
-    // find session label for badge
+    // find day + session label for the badge
     let sess = "";
-    A.sessions.forEach((s) => { if (s.ids.includes(id)) sess = s.label + " · " + s.time; });
+    A.groups.forEach((g) => g.sessions.forEach((s) => { if (s.ids.includes(id)) sess = "Day " + g.day + " · " + s.label; }));
+    const moduleBtn = l.link
+      ? `<a class="btn btn-ghost lesson-modulelink" href="#${l.link}">🔗 Open the full interactive ${l.link} module →</a>`
+      : "";
 
     return `<div class="lesson" data-lesson="${id}">
       <div class="lesson-head">
@@ -216,6 +222,7 @@ window.VIEWS = (function () {
           </div>
           <p class="lesson-explain">${esc(l.explain)}</p>
           <ul class="point-list">${l.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
+          ${moduleBtn}
         </div>
         <div class="lesson-right">
           <div class="graphic-card">
@@ -371,6 +378,117 @@ window.VIEWS = (function () {
         <div class="g-cap">Key → value lockers, returned in milliseconds ⚡</div>
       </div>`;
 
+      case "devops": return `<div class="g g-devops">
+        <div class="gdv-loop"><span class="gdv-dot"></span></div>
+        <div class="gdv-sides"><span class="gdv-dev">👩‍💻 Dev</span><span class="gdv-ops">⚙️ Ops</span></div>
+        <div class="g-cap">Plan → Code → Build → Test → Release → Deploy → Operate → Monitor → ↻</div>
+      </div>`;
+
+      case "sdlc": return `<div class="g g-sdlc">
+        <div class="gsd-ring">${["Plan", "Design", "Develop", "Test", "Deploy", "Maintain"].map((p, i) => `<span class="gsd-step s${i}" style="--i:${i}"><b>${i + 1}</b>${p}</span>`).join("")}<span class="gsd-core">🔁</span></div>
+      </div>`;
+
+      case "dockerflow": return `<div class="g g-dockerflow focus-${focus || "all"}">
+        ${[["📝", "Dockerfile"], ["🔨", "build"], ["🖼️", "Image"], ["🟢", "Container"]].map((s, i) => `<div class="gdf-stage" data-i="${i}"><span class="gdf-ico">${s[0]}</span><small>${s[1]}</small></div>${i < 3 ? '<span class="gdf-arr"><i class="gdf-pkt" style="animation-delay:' + (i * 0.5) + 's"></i></span>' : ""}`).join("")}
+        <div class="g-cap">${focus === "img" ? "One image → many identical containers" : "Recipe → build → image → running container"}</div>
+      </div>`;
+
+      case "dockerfile": return `<div class="g g-dfile">
+        <div class="gdfl-card">${[["FROM node:18", "start from a Node kitchen"], ["WORKDIR /app", "pick the countertop"], ["COPY . .", "bring the ingredients"], ["RUN npm install", "prep / install"], ["CMD node server.js", "serve when started"]].map((r, i) => `<div class="gdfl-row" style="--i:${i}"><code>${r[0]}</code><em>${r[1]}</em></div>`).join("")}</div>
+      </div>`;
+
+      case "k8sflow": return `<div class="g g-k8sflow">
+        <div class="gk-cp">🧠<small>Control Plane</small></div>
+        <span class="gk-link"><i class="gk-pkt"></i></span>
+        <div class="gk-nodes"><div class="gk-node">🖥️<span class="gk-pod">📦</span><small>Node</small></div><div class="gk-node">🖥️<span class="gk-pod">📦</span><small>Node</small></div></div>
+        <div class="g-cap">The brain schedules Pods onto worker nodes &amp; heals them</div>
+      </div>`;
+
+      case "minikube": return `<div class="g g-minikube">
+        <div class="gmk-laptop"><div class="gmk-screen"><span class="gmk-cluster">☸️<small>1-node cluster</small><span class="gmk-spin"></span></span></div><div class="gmk-base"></div></div>
+        <div class="g-cap">A real Kubernetes cluster running on your laptop</div>
+      </div>`;
+
+      case "pod": return `<div class="g g-pod2">
+        <div class="gpd-pod"><div class="gpd-label">📦 Pod · shared IP</div><span class="gpd-c">🐳 nginx</span><span class="gpd-c side">🔧 sidecar</span></div>
+        <div class="g-cap">A Pod wraps one or more containers that share networking</div>
+      </div>`;
+
+      case "pipeline": return `<div class="g g-pipeline">
+        <div class="gpl-belt">${["Build", "Test", "Deploy", "Prod"].map((s, i) => `<div class="gpl-stage s${i}" style="--i:${i}"><span class="gpl-ico">${["🔨", "🧪", "🚀", "🌍"][i]}</span><small>${s}</small></div>${i < 3 ? '<span class="gpl-arr"></span>' : ""}`).join("")}<span class="gpl-box"></span></div>
+        <div class="g-cap">Every commit rolls automatically along the belt — bad code stops it</div>
+      </div>`;
+
+      case "jenkins": return `<div class="g g-jenkins">
+        <div class="gjk-bot float-y">🤖<small>Jenkins</small></div>
+        <div class="gjk-stages">${["Build", "Test", "Deploy"].map((s, i) => `<span class="gjk-stage" style="--i:${i}">${["🔨", "🧪", "🚀"][i]} ${s}</span>`).join("")}</div>
+        <div class="g-cap">A robot foreman runs each pipeline stage on every change</div>
+      </div>`;
+
+      case "terraform": return `<div class="g g-terraform">
+        <div class="gtf-blueprint">📐<small>config (.tf)</small></div>
+        <span class="gtf-arr">apply →</span>
+        <div class="gtf-infra"><span class="gtf-res r0">🖥️</span><span class="gtf-res r1">🗄️</span><span class="gtf-res r2">🌐</span><small>real infrastructure</small></div>
+      </div>`;
+
+      case "prometheus": return `<div class="g g-prom">
+        <svg class="gpm-graph" viewBox="0 0 200 70" preserveAspectRatio="none"><polyline class="gpm-line" points="0,55 25,40 50,48 75,20 100,35 125,12 150,30 175,8 200,22"/></svg>
+        <div class="gpm-beat">❤️<span class="gpm-pulse"></span></div>
+        <div class="g-cap">Metrics scraped over time — alert when a line crosses a threshold</div>
+      </div>`;
+
+      case "observability": return `<div class="g g-observ">
+        <div class="gob-pillar p0"><b>📊</b>Metrics<small>numbers</small></div>
+        <div class="gob-pillar p1"><b>📜</b>Logs<small>events</small></div>
+        <div class="gob-pillar p2"><b>🧵</b>Traces<small>journeys</small></div>
+        <div class="g-cap">Three pillars together = see &amp; explain anything</div>
+      </div>`;
+
+      case "bedrock": return `<div class="g g-bedrock">
+        <div class="gbr-app">🖥️<small>your app</small></div>
+        <span class="gbr-link"><i class="gbr-pkt"></i></span>
+        <div class="gbr-brain">🧠<span class="gbr-glow"></span><small>foundation model</small></div>
+        <div class="g-cap">One simple API call → a powerful AI model answers</div>
+      </div>`;
+
+      case "prompt": return `<div class="g g-prompt">
+        <div class="gpr-bubble user">"Summarise this in 3 bullets for kids"</div>
+        <div class="gpr-bubble ai">• clear<br>• short<br>• simple</div>
+        <div class="g-cap">Clear instructions → clear, useful answers</div>
+      </div>`;
+
+      case "foundation": return `<div class="g g-foundation">
+        <div class="gfm-model">🧠<small>one model</small></div>
+        <div class="gfm-tasks">${["💬 chat", "📝 summarise", "🌐 translate", "💻 code"].map((t, i) => `<span class="gfm-task" style="--i:${i}">${t}</span>`).join("")}</div>
+      </div>`;
+
+      case "rag": return `<div class="g g-rag">
+        <div class="grg-q">❓<small>question</small></div>
+        <span class="grg-arr">→</span>
+        <div class="grg-docs">📚<span class="grg-find"></span><small>your docs</small></div>
+        <span class="grg-arr">→</span>
+        <div class="grg-model">🧠<small>grounded answer ✅</small></div>
+      </div>`;
+
+      case "chatbot": return `<div class="g g-chatbot">
+        <div class="gcb-win"><div class="gcb-bar"><span></span><span></span><span></span></div>
+          <div class="gcb-msg in">Hi! How do I deploy with Docker?</div>
+          <div class="gcb-msg out">Build an image, then run it as a container 🐳<span class="gcb-typing"></span></div>
+        </div>
+        <div class="g-cap">Model + prompts + RAG = a helpful assistant</div>
+      </div>`;
+
+      case "cert": return `<div class="g g-cert">
+        <div class="gct-cert"><div class="gct-ribbon">🏅</div><div class="gct-line w"></div><div class="gct-line"></div><div class="gct-line s"></div><div class="gct-seal">✓</div></div>
+        <div class="g-cap">Demo your project &amp; earn your certificate 🎉</div>
+      </div>`;
+
+      case "mock": return `<div class="g g-mock">
+        <div class="gmk-q">🧑‍💼 "Image vs container?"</div>
+        <div class="gmk-a">🧑‍🎓 "Blueprint vs running copy!"</div>
+        <div class="g-cap">Rehearse real interview questions &amp; get feedback</div>
+      </div>`;
+
       default: return `<div class="g g-generic"><div class="float-y" style="font-size:46px">☁️</div><div class="g-cap">AWS hands-on concept</div></div>`;
     }
   }
@@ -455,7 +573,7 @@ window.VIEWS = (function () {
     const cards = [
       { ico: "👋", title: "Start Here (Beginners)", body: "Never coded? Learn both tools through a simple food-truck story, step by step.", view: "guide" },
       { ico: "🎓", title: "5-Day DevOps Workshop", body: "The full Cambridge Institute workshop agenda — every AWS, Docker, K8s & AI topic explained.", view: "workshop" },
-      { ico: "☁️", title: "AWS Cloud Lab", body: "Day-1 AWS topics as animated mini-lessons with live examples — VPC, EC2, S3, ALB, Lambda & more.", view: "awslab" },
+      { ico: "🎬", title: "Animated Lab", body: "Every workshop topic — all 5 days — as an animated lesson with live examples & moving diagrams.", view: "awslab" },
       { ico: "🐳", title: "Docker Fundamentals", body: "Images, containers, Dockerfile, commands & ports — explained with everyday analogies.", view: "docker" },
       { ico: "☸️", title: "Kubernetes Architecture", body: "The control plane, worker nodes and Pods — told as a busy restaurant story.", view: "kubernetes" },
       { ico: "📄", title: "YAML Explorer", body: "Click any line of Pod, Deployment & Service YAML to see plain-English meaning.", view: "yaml" },
